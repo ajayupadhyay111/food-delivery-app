@@ -1,0 +1,26 @@
+.logo {
+  font-family: "Poppins", sans-serif; 
+  color: #ff6600;
+  display: flex;
+  align-items: center;
+}
+
+.logo .bite {
+  font-weight: 600;
+}
+
+.logo .now {
+  font-weight: 600;
+  position: relative;
+}
+
+.logo .now::after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #ff6600;
+  border-radius: 50%;
+  bottom: 0;
+  right: -10px;
+}
