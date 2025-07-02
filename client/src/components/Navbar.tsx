@@ -22,17 +22,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
+import { useUserStore } from "@/zustand/useUserStore";
 
 const Navbar = () => {
   const [darkMode, setDarkMode] = useState(false);
-
+  const { user, loading, logout } = useUserStore();
   const toggleDarkMode = () => {
     setDarkMode((prev) => !prev);
     document.documentElement.classList.toggle("dark");
   };
-
-  const admin = true;
-  const loading = true;
 
   return (
     <nav className="bg-white dark:bg-gray-900 shadow px-4 py-2 flex items-center justify-between">
@@ -42,6 +40,7 @@ const Navbar = () => {
           <span className="bite">Bite</span>
           <span className="now text-[#222] dark:text-[#fff]">Now</span>
         </div>
+        <span></span>
       </Link>
 
       {/* Nav Links */}
@@ -71,7 +70,7 @@ const Navbar = () => {
           </Link>
         </li>
         {/* Dashboard with submenu using shadcn dropdown */}
-        {admin && (
+        {user?.admin && (
           <li>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -132,10 +131,6 @@ const Navbar = () => {
           </Avatar>
         </Link>
         {loading ? (
-          <Button className="w-24 hidden sm:block bg-orange-500 hover:bg-orange-600 text-white font-semibold">
-            Logout
-          </Button>
-        ) : (
           <Button
             disabled
             className="w-24 hidden sm:block bg-orange-500 hover:bg-orange-600 text-white font-semibold"
@@ -143,6 +138,13 @@ const Navbar = () => {
             <span className="animate-spin">
               <Loader2 />
             </span>
+          </Button>
+        ) : (
+          <Button
+            onClick={logout}
+            className="w-24 hidden sm:block bg-orange-500 hover:bg-orange-600 text-white font-semibold"
+          >
+            Logout
           </Button>
         )}
         {/* menu icon */}
@@ -164,7 +166,7 @@ const Navbar = () => {
 export default Navbar;
 
 const MobileNavbar = () => {
-  const loading = true;
+  const { user, loading, logout } = useUserStore();
   return (
     <div className="mt-12 mx-8">
       <ul>
@@ -185,41 +187,51 @@ const MobileNavbar = () => {
             <span className="text-xl">Order</span>
           </Link>
         </li>
-        <li>
-          <Link
-            to="/admin/menus"
-            className="flex items-center gap-2 hover:text-orange-500 transition-all px-4 py-2"
-          >
-            <SquareMenu className="size-6" />{" "}
-            <span className="text-xl">Menu</span>
-          </Link>
-        </li>
-        <li>
-          <Link
-            to="/admin/restaurant"
-            className="flex items-center gap-2 hover:text-orange-500 transition-all px-4 py-2"
-          >
-            <UtensilsCrossed className="size-6" />{" "}
-            <span className="text-xl">Restaurant</span>
-          </Link>
-        </li>
-        <li>
-          <Link
-            to="/admin/orders"
-            className="flex items-center gap-2 hover:text-orange-500 transition-all px-4 py-2"
-          >
-            <Package className="size-6" />{" "}
-            <span className="text-xl">Restaurant Orders</span>
-          </Link>
-        </li>
+        {user?.admin && (
+          <>
+            <li>
+              <Link
+                to="/admin/menus"
+                className="flex items-center gap-2 hover:text-orange-500 transition-all px-4 py-2"
+              >
+                <SquareMenu className="size-6" />{" "}
+                <span className="text-xl">Menu</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/admin/restaurant"
+                className="flex items-center gap-2 hover:text-orange-500 transition-all px-4 py-2"
+              >
+                <UtensilsCrossed className="size-6" />{" "}
+                <span className="text-xl">Restaurant</span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/admin/orders"
+                className="flex items-center gap-2 hover:text-orange-500 transition-all px-4 py-2"
+              >
+                <Package className="size-6" />{" "}
+                <span className="text-xl">Restaurant Orders</span>
+              </Link>
+            </li>
+          </>
+        )}
       </ul>
       <div className="mt-8">
         {loading ? (
-          <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold">
+          <Button
+            onClick={logout}
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold"
+          >
             Logout
           </Button>
         ) : (
-          <Button disabled className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold">
+          <Button
+            disabled
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold"
+          >
             <Loader2 className="animate-spin size-4" />
           </Button>
         )}

@@ -1,11 +1,15 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+  } from "react-router-dom";
 import Login from "./auth/Login";
 import MainLayout from "./MainLayout";
 import SignUp from "./auth/SignUp";
 import ForgotPassword from "./auth/ForgotPassword";
 import ResetPassword from "./auth/ResetPassword";
 import VerifyEmail from "./auth/VerifyEmail";
-import './App.css'
+import "./App.css";
 import HeroSection from "./components/HeroSection";
 import Profile from "./components/Profile";
 import SearchPage from "./components/SearchPage";
@@ -14,69 +18,150 @@ import Cart from "./components/Cart";
 import Restaurant from "./admin/Restaurant";
 import AddMenu from "./admin/AddMenu";
 import Orders from "./admin/Orders";
+import { useUserStore } from "./zustand/useUserStore";
+import { useEffect } from "react";
+import InitialLoadingPage from "./components/InitialLoadingPage";
+
+const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, isVerified } = useUserStore();
+  if (!isAuthenticated) {
+    return <Navigate to={"/login"} replace />;
+  }
+  
+  if (!isVerified) {
+    return <Navigate to={"/verify-email"} replace />;
+  }
+  return children;
+};
+
+const AuthenticatedUser = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, isVerified } = useUserStore();
+  if (isAuthenticated && isVerified) {
+    return <Navigate to={"/"} replace />;
+  }
+  return children;
+};
+
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, isAuthenticated } = useUserStore();
+  if (!isAuthenticated) {
+    return <Navigate to={"/login"} replace />;
+  }
+  if (!user?.admin) {
+    return <Navigate to={"/"} replace />;
+  }
+  return children;
+};
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <MainLayout />,
+    element: (
+      <ProtectedRoutes>
+        <MainLayout />
+      </ProtectedRoutes>
+    ),
     children: [
       {
-        path:"/",
+        path: "/",
         element: <HeroSection />,
       },
       {
-        path:"/profile",
+        path: "/profile",
         element: <Profile />,
       },
       {
-        path:"/search/:text",
-        element:<SearchPage/>
+        path: "/search/:text",
+        element: <SearchPage />,
       },
       {
-        path:"/restaurant/:id",
-        element:<RestaurantDetailsPage/>  
+        path: "/restaurant/:id",
+        element: <RestaurantDetailsPage />,
       },
       {
-        path:"/cart",
-        element:<Cart/>
+        path: "/cart",
+        element: <Cart />,
       },
       {
-        path:"/admin/restaurant",
-        element:<Restaurant/>
+        path: "/admin/restaurant",
+        element: (
+          <AdminRoute>
+            <Restaurant />
+          </AdminRoute>
+        ),
       },
       {
-        path:"/admin/menus",
-        element:<AddMenu/>
+        path: "/admin/menus",
+        element: (
+          <AdminRoute>
+            <AddMenu />
+          </AdminRoute>
+        ),
       },
       {
         path: "/admin/orders",
-        element:<Orders/>
-      }
+        element: (
+          <AdminRoute>
+            <Orders />
+          </AdminRoute>
+        ),
+      },
     ],
   },
   {
     path: "/login",
-    element: <Login />,
+    element: (
+      <AuthenticatedUser>
+        <Login />
+      </AuthenticatedUser>
+    ),
   },
   {
     path: "/signup",
-    element: <SignUp />,
+    element: (
+      <AuthenticatedUser>
+        <SignUp />
+      </AuthenticatedUser>
+    ),
   },
   {
-    path:"/forgot-password",
-    element:<ForgotPassword/>
+    path: "/forgot-password",
+    element: (
+      <AuthenticatedUser>
+        <ForgotPassword />
+      </AuthenticatedUser>
+    ),
   },
   {
-    path:"/reset-password",
-    element:<ResetPassword/>
+    path: "/reset-password",
+    element: <ResetPassword />,
   },
   {
     path: "/verify-email",
-    element:<VerifyEmail/>
-  }
+    element: (
+      <AuthenticatedUser>
+        <VerifyEmail />
+      </AuthenticatedUser>
+    ),
+  },
 ]);
 
 const App = () => {
+  const { isCheckingAuth, checkAuthentication } = useUserStore();
+  // checking auth everytime when page loaded
+  useEffect(() => {
+    (async () => {
+      try {
+        await checkAuthentication();
+      } catch (error) {
+        console.log(error);
+        <Navigate to={"/login"} />;
+      }
+    })();
+  }, [checkAuthentication]);
+  if (isCheckingAuth) {
+    return <InitialLoadingPage />;
+  }
   return (
     <main>
       <RouterProvider router={router}></RouterProvider>

@@ -2,9 +2,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { userLoginSchema, type UserLoginState } from "@/schema/userSchema";
+import { useUserStore } from "@/zustand/useUserStore";
 
 const Login = () => {
   const [input, setInput] = useState<UserLoginState>({
@@ -12,14 +13,15 @@ const Login = () => {
     password: "",
   });
   const [errors, setErrors] = useState<Partial<UserLoginState>>({});
-
+  const navigate = useNavigate();
+  const { login, loading } = useUserStore();
   const ChangeEventHandler = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     console.log(name, value);
     setInput({ ...input, [name]: value });
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     // form validation check starts using zod
     const result = userLoginSchema.safeParse(input);
@@ -28,9 +30,14 @@ const Login = () => {
       setErrors(fieldErrors as Partial<UserLoginState>);
       return;
     }
-    console.log(input);
+    // login api implementation
+    try {
+      await login(input);
+      navigate("/");
+    } catch (error) {
+      console.log(error);
+    }
   };
-  const loading = true;
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-100 to-yellow-200">
       <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
@@ -55,9 +62,7 @@ const Login = () => {
               className="focus:ring-orange-500 focus:border-orange-500"
               required
             />
-            {
-                errors && <span className="text-red-500">{errors.email}</span>
-            }
+            {errors && <span className="text-red-500">{errors.email}</span>}
           </div>
           <div>
             <Label
@@ -76,24 +81,27 @@ const Login = () => {
               className="focus:ring-orange-500 focus:border-orange-500"
               required
             />
-            {
-                errors && <span className="text-red-500">{errors.password}</span>
-            }
-          <Link to="/forgot-password" className="text-orange-500 hover:underline">Forgot password</Link>
+            {errors && <span className="text-red-500">{errors.password}</span>}
+            <Link
+              to="/forgot-password"
+              className="text-orange-500 hover:underline"
+            >
+              Forgot password
+            </Link>
           </div>
           {loading ? (
-            <Button
-              type="submit"
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold"
-            >
-              Login
-            </Button>
-          ) : (
             <Button
               disabled
               className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold"
             >
               <Loader2 className="animate-spin size-4" />
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold"
+            >
+              Login
             </Button>
           )}
         </form>
