@@ -9,7 +9,7 @@ import {
   sendResetSuccessEmail,
   sendVerificationEmail,
   sendWelcomeEmail,
-} from "../mailtrap/email";
+} from "../nodemailer/email";
 import crypto from "crypto";
 
 export const signup = async (
@@ -48,6 +48,7 @@ export const signup = async (
       "-password"
     );
     res.status(201).json({
+      success: true,
       message: "User created successfully",
       user: userWithoutPassword,
     });
@@ -85,6 +86,7 @@ export const login = async (
       "-password"
     );
     res.status(200).json({
+      success: true,
       message: "Login successful",
       user: userWithoutPassword,
     });
@@ -99,7 +101,7 @@ export const verifyEmail = async (
   next: NextFunction
 ) => {
   try {
-    const { email, verificationCode } = req.body;
+    const { verificationCode } = req.body;
 
     const user = await User.findOne({
       verificationToken: verificationCode,
@@ -119,6 +121,7 @@ export const verifyEmail = async (
     // send welcome email
     await sendWelcomeEmail(user.email, user.fullname);
     res.status(200).json({
+      success: true,
       message: "Email verified successfully",
       user: user,
     });
@@ -133,10 +136,11 @@ export const logout = async (
   next: NextFunction
 ) => {
   try {
-    return res.clearCookie("token").status(200).json({
+     res.clearCookie("token").status(200).json({
       success: true,
       message: "Logout successful",
     });
+    return;
   } catch (error) {
     next(error);
   }

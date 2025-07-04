@@ -13,7 +13,7 @@ export const isAuthenticated = async (req: Request, res: Response) => {
   try {
     const token = req.cookies.token;
     if (!token) {
-      res.status(401).json({ message: "No authentication token provided" });
+      res.status(401).json({ message: "Login first" });
       return;
     }
     const decode = jwt.verify(token, process.env.JWT_SECRET!) as jwt.JwtPayload;
