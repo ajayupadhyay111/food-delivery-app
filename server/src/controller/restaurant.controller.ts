@@ -25,15 +25,16 @@ export const createRestaurant = async (
       });
     }
 
-    const imageURL = await uploadImageOnCloudinary(file as Express.Multer.File);
+    const imageUrl = await uploadImageOnCloudinary(file as Express.Multer.File);
+
     await Restaurant.create({
       user: req.id,
       restaurantName,
       city,
       country,
-      deliveryTime,
-      cuisines: JSON.parse(cuisines),
-      imageURL,
+      deliveryTime:Number(deliveryTime),
+      cuisines: cuisines.split(","),
+      imageUrl,
     });
     res.status(200).json({
       success: true,
@@ -50,10 +51,11 @@ export const getRestaurant = async (
   next: NextFunction
 ) => {
   try {
-    const restaurant = await Restaurant.find({ user: req.id });
+    const restaurant = await Restaurant.findOne({ user: req.id }).populate("menus")
     if (!restaurant) {
       return res.status(404).json({
         success: false,
+        restaurant:[],
         message: "Restaurant not found",
       });
     }
@@ -84,14 +86,14 @@ export const updateRestaurant = async (
     restaurant.restaurantName = restaurantName;
     restaurant.city = city;
     restaurant.country = country;
-    restaurant.deliveryTime = deliveryTime;
-    restaurant.cuisines = JSON.parse(cuisines);
+    restaurant.deliveryTime = Number(deliveryTime);
+    restaurant.cuisines = cuisines.split(",");
 
     if (file) {
       const imageURL = await uploadImageOnCloudinary(
         file as Express.Multer.File
       );
-      restaurant.imageUrl = imageURL;
+      restaurant.imageUrl = imageURL as string;
     }
     await restaurant.save();
     res.status(200).json({

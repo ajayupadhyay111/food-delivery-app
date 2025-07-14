@@ -9,7 +9,7 @@ export const addMenu = async (
   next: NextFunction
 ) => {
   try {
-    const { name, description, price } = req.body;
+    const { name, price, desc } = req.body;
     const file = req.file;
     if (!file) {
       return res.status(400).json({
@@ -20,7 +20,7 @@ export const addMenu = async (
     const imageURL = await uploadImageOnCloudinary(file as Express.Multer.File);
     const menu = await Menu.create({
       name,
-      description,
+      description: desc,
       price,
       image: imageURL,
     });
@@ -40,9 +40,9 @@ export const addMenu = async (
 };
 
 export const editMenu = async (
-  next: NextFunction,
   res: Response,
-  req: Request
+  req: Request,
+  next: NextFunction
 ) => {
   try {
     const { id } = req.params;
@@ -63,7 +63,7 @@ export const editMenu = async (
       const imageUrl = await uploadImageOnCloudinary(
         file as Express.Multer.File
       );
-      menu.image = imageUrl;
+      menu.image = imageUrl as string;
     }
     await menu.save();
     res.status(200).json({

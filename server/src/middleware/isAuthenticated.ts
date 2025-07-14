@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response,NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
 declare global {
@@ -9,7 +9,7 @@ declare global {
   }
 }
 
-export const isAuthenticated = async (req: Request, res: Response) => {
+export const isAuthenticated = async (req: Request, res: Response,next:NextFunction) => {
   try {
     const token = req.cookies.token;
     if (!token) {
@@ -22,7 +22,7 @@ export const isAuthenticated = async (req: Request, res: Response) => {
       return;
     }
     req.id = decode.userId;
-    res.status(200).json({ message: "User is authenticated" });
+     next();
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
   }
