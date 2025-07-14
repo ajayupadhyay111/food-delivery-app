@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,6 +6,7 @@ import {
   restaurantSchema,
   type RestaurantState,
 } from "@/schema/restaurantSchema";
+import useRestaurantStore from "@/zustand/useRestaurantStore";
 
 const Restaurant = () => {
   const [form, setForm] = useState<RestaurantState>({
@@ -17,8 +18,14 @@ const Restaurant = () => {
     image: undefined,
   });
   const [preview, setPreview] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Partial<RestaurantState>>({});
+  const {
+    loading,
+    restaurant,
+    updateRestaurant,
+    getRestaurant,
+    createRestaurant,
+  } = useRestaurantStore();
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, files } = e.target;
     if (type === "file" && files && files[0]) {
@@ -39,7 +46,7 @@ const Restaurant = () => {
     }
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     // Validate form data
@@ -50,23 +57,44 @@ const Restaurant = () => {
       return;
     }
 
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-      alert("Restaurant added successfully!");
-      console.log("Form Data:", form);
+    try {
+      const formData = new FormData();
+      formData.append("restaurantName", form.restaurantName);
+      formData.append("city", form.city);
+      formData.append("country", form.country);
+      formData.append("deliveryTime", form.deliveryTime.toString());
+      formData.append("cuisines", form.cuisines.toString());
+      if (form.image) {
+        formData.append("imageFile", form.image);
+      }
+
+      // Simulate API call
+      if (restaurant) {
+        await updateRestaurant(formData);
+      } else {
+        await createRestaurant(formData);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    (async () => {
+      await getRestaurant();
+      console.log(restaurant)
       setForm({
-        restaurantName: "",
-        city: "",
-        country: "",
-        deliveryTime: 0,
-        cuisines: [],
+        restaurantName: restaurant.restaurantName || "",
+        city: restaurant.city || "",
+        country: restaurant.country || "",
+        deliveryTime: restaurant.deliveryTime || 0,
+        cuisines: restaurant.cuisines
+          ? restaurant.cuisines.map((cuisine: string) => cuisine)
+          : [],
         image: undefined,
       });
-      setPreview(null);
-    }, 1200);
-  };
+    })();
+  }, []);
 
   return (
     <div className="max-w-xl mx-auto my-10 bg-white dark:bg-gray-900 rounded-lg shadow p-8">
@@ -75,7 +103,9 @@ const Restaurant = () => {
       </h1>
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <Label htmlFor="name">Restaurant Name</Label>
+          <Label htmlFor="name" className="pb-2">
+            Restaurant Name
+          </Label>
           <Input
             type="text"
             name="restaurantName"
@@ -89,7 +119,9 @@ const Restaurant = () => {
           )}
         </div>
         <div>
-          <Label htmlFor="city">City</Label>
+          <Label htmlFor="city" className="pb-2">
+            City
+          </Label>
           <Input
             type="text"
             name="city"
@@ -103,7 +135,9 @@ const Restaurant = () => {
           )}
         </div>
         <div>
-          <Label htmlFor="country">Country</Label>
+          <Label htmlFor="country" className="pb-2">
+            Country
+          </Label>
           <Input
             type="text"
             name="country"
@@ -117,7 +151,9 @@ const Restaurant = () => {
           )}
         </div>
         <div>
-          <Label htmlFor="deliveryTime">Delivery Time</Label>
+          <Label htmlFor="deliveryTime" className="pb-2">
+            Delivery Time
+          </Label>
           <Input
             type="number"
             name="deliveryTime"
@@ -131,7 +167,9 @@ const Restaurant = () => {
           )}
         </div>
         <div>
-          <Label htmlFor="cuisines">Cuisines</Label>
+          <Label htmlFor="cuisines" className="pb-2">
+            Cuisines
+          </Label>
           <Input
             type="text"
             name="cuisines"
@@ -145,30 +183,54 @@ const Restaurant = () => {
           )}
         </div>
         <div>
-          <Label htmlFor="image">Upload Restaurant Banner</Label>
+          <Label htmlFor="image" className="pb-2">
+            Upload Restaurant Banner
+          </Label>
           <Input
             type="file"
             accept="image/*"
             name="image"
             onChange={handleChange}
-            required
+            
           />
-          {preview && (
+          {preview ? (
             <img
               src={preview}
               alt="Preview"
               className="mt-3 w-full h-40 object-cover rounded-lg border"
             />
+          ) : (
+            form.image && (
+              <img
+                src={
+                  typeof form.image === "string"
+                    ? form.image
+                    : URL.createObjectURL(form.image)
+                }
+                alt="Preview"
+                className="mt-3 w-full h-40 object-cover rounded-lg border"
+              />
+            )
           )}
         </div>
         <div>
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold"
-          >
-            {loading ? "Adding..." : "Add your restaurant"}
-          </Button>
+          {!restaurant ? (
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold"
+            >
+              {loading ? "Adding..." : "Add your restaurant"}
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold"
+            >
+              {loading ? "Updating..." : "Update your restaurant"}
+            </Button>
+          )}
         </div>
       </form>
     </div>

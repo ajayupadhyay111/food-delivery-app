@@ -2,15 +2,18 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import axios from "axios";
 import { toast } from "sonner";
+import type { MenuItem, RestaurantState } from "@/types/restaurantType";
 
-const API_END_POINT = "http://localhost:8000/api/v1/user";
+const API_END_POINT = "http://localhost:8000/api/v1/restaurant";
 axios.defaults.withCredentials = true;
 
-const useRestaurantStore = create()(
+const useRestaurantStore = create<RestaurantState>()(
   persist(
     (set) => ({
       loading: false,
       restaurant: null,
+      searchedRestaurant: null,
+      appliedFilter: [],
       createRestaurant: async (formData: FormData) => {
         try {
           set({ loading: true });
@@ -51,7 +54,7 @@ const useRestaurantStore = create()(
       updateRestaurant: async (formData: FormData) => {
         try {
           set({ loading: true });
-          const response = await axios.post(`${API_END_POINT}`, formData, {
+          const response = await axios.put(`${API_END_POINT}`, formData, {
             headers: {
               "Content-Type": "multipart/form-data",
             },
@@ -69,7 +72,65 @@ const useRestaurantStore = create()(
           set({ loading: false });
         }
       },
-      searchRestaurant:async()=>{},
+      searchRestaurant: async (
+        searchText: string,
+        searchQuery: string,
+        selectedCuisines: any
+      ) => {
+        try {
+          set({ loading: true });
+          const params = new URLSearchParams();
+
+          params.set("searchQuery", searchQuery);
+          params.set("cuisines", selectedCuisines.join(","));
+          const response = await axios.post(
+            `${API_END_POINT}/search/${searchText}?${params.toString()}`
+          );
+          if (response) {
+            console.log(response.data);
+            set({ searchedRestaurant: response.data });
+          }
+        } catch (error) {
+          console.log(error.message);
+        } finally {
+          set({ loading: false });
+        }
+      },
+      addMenuToRestaurant: (menu: MenuItem) => {
+        set((state: any) => ({
+          restaurant: state.restaurant
+            ? { ...state.restaurant, menus: [...state.restaurant.menus, menu] }
+            : null,
+        }));
+      },
+      updateMenuOfRestaurant: (updatedMenu: MenuItem) => {
+        set((state: any) => {
+          if (state.restaurant) {
+            const updatedMenus = state.restaurant.menus.map((menu: any) =>
+              menu._id === updatedMenu._id ? updatedMenu : menu
+            );
+            return {
+              restaurant: {
+                ...state.restaurant,
+                menus: updatedMenus,
+              },
+            };
+          }
+          return {};
+        });
+      },
+      setAppliedFilter: (value: string) => {
+        set((state) => {
+          const isAppliedFilter = state.appliedFilter.includes(value);
+          const updatedFilter = isAppliedFilter
+            ? state.appliedFilter.filter((item) => item !== value)
+            : [...state.appliedFilter, value];
+          return { appliedFilter: updatedFilter };
+        });
+      },
+      resetAppliedFilter: () => {
+        set({ appliedFilter: [] });
+      },
     }),
     {
       name: "restaurant-name",
@@ -77,3 +138,5 @@ const useRestaurantStore = create()(
     }
   )
 );
+
+export default useRestaurantStore;

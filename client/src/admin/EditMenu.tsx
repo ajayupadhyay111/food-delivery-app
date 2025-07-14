@@ -8,6 +8,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import useMenuStore from "@/zustand/useMenuStore";
+import { Loader2 } from "lucide-react";
 
 type Props = {
   item: MenuItem;
@@ -16,12 +18,13 @@ type Props = {
 };
 
 function EditMenu({ item, setEditMenu, editMenu }: Props) {
-  console.log(item);
-
+  
   const [form, setForm] = React.useState<MenuItem>(item);
   const [preview, setPreview] = React.useState<string>(
     typeof item.img === "string" ? item.img : ""
   );
+
+  const {loading,editMenuCard} = useMenuStore();
   
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -35,11 +38,22 @@ function EditMenu({ item, setEditMenu, editMenu }: Props) {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the form data to your server
-    console.log("Form submitted:", form);
-    setEditMenu(false);
+    console.log(form)
+    const formData = new FormData();
+    formData.append("name", form.name);
+    formData.append("price", form.price.toString());
+    formData.append("desc", form.description);
+    if (form.img) {
+      formData.append("image", form.img);
+    }
+    try {
+      await editMenuCard(item._id, formData)
+      setEditMenu(false);
+    } catch (error) {
+      console.log(error)
+    }
   };
 
   return (
@@ -67,11 +81,11 @@ function EditMenu({ item, setEditMenu, editMenu }: Props) {
             required
           />
           <textarea
-            name="desc"
+            name="description"
             placeholder="Description"
             className="w-full p-2 border rounded"
             rows={3}
-            value={form.desc}
+            value={form.description}
             onChange={handleChange}
             required
           ></textarea>
@@ -88,12 +102,20 @@ function EditMenu({ item, setEditMenu, editMenu }: Props) {
               className="w-full h-32 object-cover rounded mt-2"
             />
           )}
-          <Button
+          {
+            loading ? <Button
+            disabled={loading}
             type="submit"
-            className="bg-green-500 text-white px-4 py-2 rounded w-full"
+            className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded w-full"
+          >
+            <Loader2/> Updating...
+          </Button>:<Button
+            type="submit"
+            className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded w-full"
           >
             Update
           </Button>
+          }
         </form>
       </DialogContent>
     </Dialog>

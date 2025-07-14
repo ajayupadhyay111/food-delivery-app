@@ -2,19 +2,22 @@ import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Mail, Plus, Phone, MapPin, Landmark } from "lucide-react";
 import { Button } from "./ui/button";
+import { useUserStore } from "@/zustand/useUserStore";
+import { toast } from "sonner";
 
 const Profile = () => {
+  const { user, updateProfile } = useUserStore();
   const [profileData, setProfileData] = useState({
-    fullname: "",
-    email: "ajju@gmail.com",
-    contact: "",
-    address: "",
-    city: "",
-    country: "",
-    profilePicture: "",
+    fullname: user?.fullname || "",
+    email: user?.email || "",
+    address: user?.address || "",
+    city: user?.city || "",
+    country: user?.country || "",
+    profilePicture: user?.profilePicture || "",
   });
   const imageRef = useRef<HTMLInputElement | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>("");
+  const [loading, setLoading] = useState(false);
 
   const fileChangeHandler = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -34,16 +37,31 @@ const Profile = () => {
     setProfileData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const updateProfile = (e: FormEvent) => {
+  const handleUpdateProfile = async (e: FormEvent) => {
     e.preventDefault();
-    // You can add validation and API call here
-    console.log("Profile updated", profileData);
+    setLoading(true);
+    try {
+      // Only send updatable fields
+      const updatedData = {
+        fullname: profileData.fullname,
+        address: profileData.address,
+        city: profileData.city,
+        country: profileData.country,
+        profilePicture: profileData.profilePicture,
+      };
+      await updateProfile(updatedData);
+      toast.success("Profile updated successfully!");
+    } catch (error) {
+      toast.error("Failed to update profile.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <form
       className="max-w-3xl mx-auto my-8 bg-white dark:bg-gray-900 rounded-lg shadow p-6"
-      onSubmit={updateProfile}
+      onSubmit={handleUpdateProfile}
     >
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
@@ -90,12 +108,11 @@ const Profile = () => {
             name="email"
             readOnly
             value={profileData.email}
-            onChange={changeHandler}
             placeholder="Email"
             className=" outline-none p-1 w-full bg-transparent border-none focus-visible:ring-0 text-gray-400 cursor-not-allowed select-none"
           />
         </div>
-
+        
         <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 rounded p-3">
           <MapPin className="text-gray-500" />
           <input
@@ -134,8 +151,9 @@ const Profile = () => {
         <Button
           type="submit"
           className="bg-orange-500 hover:bg-orange-600 text-white font-semibold"
+          disabled={loading}
         >
-          Update
+          {loading ? "Updating..." : "Update"}
         </Button>
       </div>
     </form>

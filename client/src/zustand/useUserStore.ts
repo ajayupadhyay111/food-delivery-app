@@ -28,11 +28,11 @@ type UserState = {
   signup: (input: UserSignupState) => Promise<void>;
   login: (input: UserLoginState) => Promise<void>;
   verifyEmail: (verificationToken: string) => Promise<void>;
-  checkAuthentication: () => Promise<void>;
+  checkAuthentication: () => Promise<boolean | undefined>;
   logout: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (token: string, newPassword: string) => Promise<void>;
-  updateProfile: (input: any) => Promise  <void>;
+  updateProfile: (input: any) => Promise<void>;
 };
 
 export const useUserStore = create<UserState>()(
@@ -83,7 +83,11 @@ export const useUserStore = create<UserState>()(
           if (response.data.success) {
             console.log(response.data);
             toast.success(response.data.message);
-            set({ user: response.data.user, isAuthenticated: true,isVerified:true });
+            set({
+              user: response.data.user,
+              isAuthenticated: true,
+              isVerified: true,
+            });
           }
         } catch (error) {
           if (axios.isAxiosError(error)) {
@@ -144,8 +148,10 @@ export const useUserStore = create<UserState>()(
           } else {
             toast.error("Something went wrong");
           }
+          set({ isAuthenticated: false });
+          return false;
         } finally {
-          set({loading:false, isCheckingAuth: false });
+          set({ loading: false, isCheckingAuth: false });
         }
       },
       logout: async () => {

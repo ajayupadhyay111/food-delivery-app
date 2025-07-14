@@ -9,30 +9,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import EditMenu from "./EditMenu";
-import { Plus } from "lucide-react";
-
-let menus = [
-  {
-    id: 1,
-    name: "Paneer Tikka",
-    price: 220,
-    desc: "Delicious paneer tikka with spices",
-    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQM0eDCB5wXDAPYJfi02-CzoqeXbaZuGOT9IA&s",
-  },
-  {
-    id: 2,
-    name: "Chicken Biryani",
-    price: 320,
-    desc: "Aromatic chicken biryani with saffron",
-    img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_upF9cgyXK9fYh85mVV-ZEYKw04JcTzUjLw&s",
-  },
-];
+import { Loader2, Plus } from "lucide-react";
+import useMenuStore from "@/zustand/useMenuStore";
+import useRestaurantStore from "@/zustand/useRestaurantStore";
 
 export type MenuItem = {
-  id: number;
+  _id: string;
   name: string;
   price: number;
-  desc: string;
+  description: string;
   img: string;
 };
 
@@ -40,7 +25,8 @@ function AddMenu() {
   const [open, setOpen] = useState(false);
   const [editMenu, setEditMenu] = useState<boolean>(false);
   const [selectedMenu, setSelectedMenu] = useState<any>();
-  const [menu, setMenu] = useState<MenuItem[]>(menus);
+  const { loading, createMenu } = useMenuStore();
+  const { restaurant } = useRestaurantStore();
   const [form, setForm] = useState({
     name: "",
     price: "",
@@ -61,12 +47,24 @@ function AddMenu() {
     }
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    const formData = new FormData();
+    formData.append("name", form.name);
+    formData.append("price", form.price.toString());
+    formData.append("desc", form.desc);
+    if (form.img) {
+      formData.append("image", form.img);
+    }
     // Validate form data
-    setForm({ name: "", price: "", desc: "", img: null });
-    // setPreview(null);
-    setOpen(false);
+    try {
+      await createMenu(formData);
+      setForm({ name: "", price: "", desc: "", img: null });
+      setPreview(null);
+      setOpen(false);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -76,7 +74,7 @@ function AddMenu() {
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button className="bg-orange-600 hover:bg-orange-500 transition-all duration-300 text-white px-4 py-2 rounded">
-              <Plus/> Add Menu
+              <Plus /> Add Menu
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -123,30 +121,40 @@ function AddMenu() {
                   className="w-full h-32 object-cover rounded mt-2"
                 />
               )}
-              <Button
-                type="submit"
-                className="bg-green-500 text-white px-4 py-2 rounded w-full"
-              >
-                Add Menu Item
-              </Button>
+              {loading ? (
+                <Button
+                  disabled={loading}
+                  type="submit"
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded w-full"
+                >
+                  <Loader2 /> Adding
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded w-full"
+                >
+                  Add Menu Item
+                </Button>
+              )}
             </form>
           </DialogContent>
         </Dialog>
       </div>
       {/* Available Menus List */}
       <div className="grid md:grid-cols-3 gap-6">
-        {menu.length === 0 ? (
+        {restaurant.menus.length === 0 ? (
           <div className="col-span-3 text-center text-gray-500">
             No menu items added yet.
           </div>
         ) : (
-          menu.map((item) => (
+          restaurant.menus.map((item: any) => (
             <div
               key={item.id}
               className="bg-white dark:bg-gray-800 rounded-xl shadow p-4 flex flex-col"
             >
               <img
-                src={item.img}
+                src={item.image}
                 alt={item.name}
                 className="w-full h-32 object-cover rounded mb-3"
               />
@@ -154,18 +162,30 @@ function AddMenu() {
                 {item.name}
               </h2>
               <p className="text-gray-500 dark:text-gray-300 text-sm mb-2">
-                {item.desc}
+                {item.description}
               </p>
               <span className="font-semibold text-orange-600 dark:text-orange-400 text-lg mb-2">
                 ₹{item.price}
               </span>
-              <Button onClick={()=>{setEditMenu(true); setSelectedMenu(item)}}  className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-4 py-2 rounded">
+              <Button
+                onClick={() => {
+                  setEditMenu(true);
+                  setSelectedMenu(item);
+                }}
+                className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-4 py-2 rounded"
+              >
                 Edit Menu
               </Button>
             </div>
           ))
         )}
-        {editMenu && <EditMenu item={selectedMenu} setEditMenu={setEditMenu} editMenu={editMenu}/>}
+        {editMenu && (
+          <EditMenu
+            item={selectedMenu}
+            setEditMenu={setEditMenu}
+            editMenu={editMenu}
+          />
+        )}
       </div>
     </div>
   );
