@@ -13,7 +13,7 @@ export type Restaurant = {
   country: string;
   deliveryTime: number;
   cuisines: string[];
-  menu: MenuItem;
+  menus: MenuItem[];
   imageUrl: string;
 };
 export type SearchedRestaurant = {
@@ -24,6 +24,7 @@ export type RestaurantState = {
   restaurant: Restaurant | null;
   searchedRestaurant: SearchedRestaurant | null | undefined;
   appliedFilter: string[];
+  singleRestaurant: Restaurant | null;
   createRestaurant: (formData: FormData) => Promise<void>;
   getRestaurant: () => Promise<void>;
   updateRestaurant: (formData: FormData) => Promise<void>;
@@ -35,5 +36,6 @@ export type RestaurantState = {
   addMenuToRestaurant: (menu: any) => void;
   updateMenuOfRestaurant: (menu: any) => void;
   setAppliedFilter: (value: string) => void;
-  resetAppliedFilter:()=>void;
+  resetAppliedFilter: () => void;
+  getSingleRestaurant: (restaurantId: string) => Promise<void>;
 };

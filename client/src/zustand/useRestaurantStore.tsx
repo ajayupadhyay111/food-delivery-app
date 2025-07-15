@@ -14,6 +14,7 @@ const useRestaurantStore = create<RestaurantState>()(
       restaurant: null,
       searchedRestaurant: null,
       appliedFilter: [],
+      singleRestaurant:null,
       createRestaurant: async (formData: FormData) => {
         try {
           set({ loading: true });
@@ -87,7 +88,6 @@ const useRestaurantStore = create<RestaurantState>()(
             `${API_END_POINT}/search/${searchText}?${params.toString()}`
           );
           if (response) {
-            console.log(response.data);
             set({ searchedRestaurant: response.data });
           }
         } catch (error) {
@@ -131,6 +131,16 @@ const useRestaurantStore = create<RestaurantState>()(
       resetAppliedFilter: () => {
         set({ appliedFilter: [] });
       },
+      getSingleRestaurant:async(restaurantId:string)=>{
+        try {
+          const response = await axios.get(`${API_END_POINT}/${restaurantId}`)
+          if(response.data.success){
+            set({singleRestaurant:response.data.restaurant})
+          }
+        } catch (error) {
+          console.log(error)
+        }
+      }      
     }),
     {
       name: "restaurant-name",

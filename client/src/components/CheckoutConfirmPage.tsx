@@ -1,7 +1,17 @@
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { useUserStore } from "@/zustand/useUserStore";
+import type { CheckoutSessionRequest } from "@/types/orderTypes";
+import useRestaurantStore from "@/zustand/useRestaurantStore";
+import { useCartStore } from "@/zustand/useCartStore";
+import useOrderStore from "@/zustand/useOrderStore";
 
 type Props = {
   open: boolean;
@@ -9,30 +19,59 @@ type Props = {
 };
 
 function CheckoutConfirmPage({ open, setOpen }: Props) {
+  const { user } = useUserStore();
+  const { cart } = useCartStore();
+  const { loading, createCheckoutSession } = useOrderStore();
+  const { restaurant } = useRestaurantStore();
   const [input, setInput] = useState({
-    name: "",
-    email: "",
-    contact: "",
-    address: "",
-    city: "",
-    country: "",
+    name: user?.fullname || "",
+    email: user?.email || "",
+    contact: user?.contact || "",
+    address: user?.address || "",
+    city: user?.city || "",
+    country: user?.country || "",
   });
-  const [loading, setLoading] = useState(false);
-
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setInput((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+
     // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
+
+    try {
+      const checkoutData:CheckoutSessionRequest={
+        cartItems:cart.map(item => ({
+          menuId: item._id,
+          name: item.name,
+          image: item.image,
+          price: item.price.toString(),
+          quantity: item.quantity.toString()
+        })),
+        deliveryDetails: {
+          name: input.name,
+          email: input.email,
+          contact: input.contact,
+          address: input.address,
+          city: input.city,
+          country: input.country
+        },
+        restaurantId: restaurant?._id as string
+      }
+      await createCheckoutSession(checkoutData);
+    } catch (error) {
+      console.log(error)
+    }finally{
       setOpen(false);
-      // Show success message or redirect as needed
-    }, 1500);
+    }
+
+    // setTimeout(() => {
+    //   setOpen(false);
+    //   // Show success message or redirect as needed
+    // }, 1500);
   };
 
   return (
@@ -57,6 +96,8 @@ function CheckoutConfirmPage({ open, setOpen }: Props) {
             value={input.email}
             onChange={handleChange}
             required
+            readOnly
+            disabled
           />
           <Input
             name="contact"
@@ -97,8 +138,7 @@ function CheckoutConfirmPage({ open, setOpen }: Props) {
           </Button>
         </form>
       </DialogContent>
-
     </Dialog>
-    );
+  );
 }
 export default CheckoutConfirmPage;

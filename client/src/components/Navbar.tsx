@@ -23,15 +23,18 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { useUserStore } from "@/zustand/useUserStore";
+import { useCartStore } from "@/zustand/useCartStore";
 
 const Navbar = () => {
   const [darkMode, setDarkMode] = useState(false);
+  const { cart } = useCartStore();
   const { user, loading, logout } = useUserStore();
   const toggleDarkMode = () => {
     setDarkMode((prev) => !prev);
     document.documentElement.classList.toggle("dark");
   };
 
+  console.log(cart)
   return (
     <nav className="bg-white dark:bg-gray-900 shadow px-4 py-2 flex items-center justify-between">
       {/* Logo */}
@@ -119,14 +122,18 @@ const Navbar = () => {
         >
           <ShoppingCart className="w-5 h-5 text-gray-700 dark:text-orange-400" />
           {/* Example cart badge */}
-          <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full px-1.5 py-0.5">
-            2
-          </span>
+          {cart.length > 0 ? (
+            <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full px-1.5 py-0.5">
+              {cart.length}
+            </span>
+          ) : (
+            ""
+          )}
         </Link>
         {/* User Image */}
         <Link to="/profile">
           <Avatar>
-            <AvatarImage src={""} alt="User" />
+            <AvatarImage src={user?.profilePicture} alt="User" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
         </Link>

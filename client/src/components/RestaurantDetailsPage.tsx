@@ -3,44 +3,18 @@ import burger from "../assets/burger.jpg";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import AvailableMenuCard from "./AvailableMenuCard";
+import useRestaurantStore from "@/zustand/useRestaurantStore";
+import { useEffect } from "react";
+import { useParams } from "react-router-dom";
 
-export type MenuItem = {
-  id: number;
-  name: string;
-  desc: string;
-  price: number;
-  img: string;
-  tag: string; // "Veg", "Non-Veg", "Dessert", etc.
-};
-
-const menuItems:MenuItem[] = [
-  {
-    id: 1,
-    name: "Paneer Tikka",
-    desc: "Spicy grilled paneer cubes served with mint chutney.",
-    price: 220,
-    img: burger,
-    tag: "Veg",
-  },
-  {
-    id: 2,
-    name: "Chicken Biryani",
-    desc: "Aromatic basmati rice cooked with tender chicken and spices.",
-    price: 320,
-    img: burger,
-    tag: "Non-Veg",
-  },
-  {
-    id: 3,
-    name: "Gulab Jamun",
-    desc: "Soft, sweet, and juicy milk-solid balls in sugar syrup.",
-    price: 90,
-    img: burger,
-    tag: "Dessert",
-  },
-];
 
 const RestaurantDetailsPage = () => {
+  const params = useParams();
+  const { getSingleRestaurant, singleRestaurant } = useRestaurantStore();
+
+  useEffect(() => {
+    getSingleRestaurant(params.id!);
+  }, [params.id!]);
   return (
     <div className="max-w-5xl mx-auto my-10 px-4">
       {/* Restaurant Header */}
@@ -48,16 +22,16 @@ const RestaurantDetailsPage = () => {
         {/* Image */}
         <div className="flex-shrink-0 w-full md:w-80 h-56 md:h-64 overflow-hidden rounded-xl">
           <img
-            src={burger}
+            src={singleRestaurant?.imageUrl || "loading..."}
             alt="Tandoori Tadka"
             className="w-full h-full object-cover rounded-xl"
           />
         </div>
         {/* Details */}
-        <div className="flex-1 flex flex-col justify-between">
+        <div className="flex-1 flex flex-col">
           <div>
             <h1 className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">
-              Tandoori Tadka
+              {singleRestaurant?.restaurantName}
             </h1>
             <div className="flex items-center gap-2 mb-3">
               <Star className="w-5 h-5 text-yellow-400" />
@@ -69,11 +43,11 @@ const RestaurantDetailsPage = () => {
             <div className="flex items-center gap-3 mb-3">
               <MapPin className="w-5 h-5 text-orange-500" />
               <span className="text-gray-600 dark:text-gray-300">
-                Connaught Place, Delhi, India
+                {singleRestaurant?.city},{singleRestaurant?.country}
               </span>
             </div>
             <div className="flex gap-2 mb-4 flex-wrap">
-              {["biryani", "momos", "jalebi"].map(
+              {singleRestaurant?.cuisines.map(
                 (item: string, idx: number) => (
                   <Badge key={idx} className="bg-orange-100 text-orange-700">
                     {item}
@@ -88,13 +62,10 @@ const RestaurantDetailsPage = () => {
               <span className="text-gray-700 dark:text-gray-300 font-medium">
                 Delivery Time:{" "}
                 <span className="font-bold text-orange-600 dark:text-orange-400">
-                  35 mins
+                  {singleRestaurant?.deliveryTime} mins
                 </span>
               </span>
-            </div>
-            <Button className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 rounded-md">
-              Order Now
-            </Button>
+            </div> 
           </div>
         </div>
       </div>
@@ -105,7 +76,7 @@ const RestaurantDetailsPage = () => {
           Available Menus
         </h2>
         <div className="grid md:grid-cols-3 gap-6">
-          {menuItems.map((item) => (
+          {singleRestaurant?.menus.map((item) => (
             <AvailableMenuCard item={item} />
           ))}
         </div>

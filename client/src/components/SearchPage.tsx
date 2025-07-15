@@ -114,19 +114,19 @@ const SearchPage = () => {
                         <span>{item.country}</span>
                       </div>
                       <div className="flex gap-2 mt-3 flex-wrap">
-                        {item.cuisines.map((item: string, idx: number) => (
+                        {item.cuisines.map((cuisine: string, idx: number) => (
                           <Badge
                             key={idx}
                             className="rounded-md cursor-pointer bg-orange-100 text-orange-700 hover:bg-orange-200"
                           >
-                            {item}
+                            {cuisine}
                           </Badge>
                         ))}
                       </div>
                     </CardContent>
                     {/* Footer Section */}
                     <CardFooter className="p-5 pt-0 flex justify-end">
-                      <Link to={`/restaurant/${123}`}>
+                      <Link to={`/restaurant/${item._id}`}>
                         <Button className="bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-md px-5 py-2 shadow">
                           View Menus
                         </Button>

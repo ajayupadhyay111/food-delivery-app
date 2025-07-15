@@ -62,7 +62,7 @@ const router = createBrowserRouter([
       </ProtectedRoutes>
     ),
     children: [
-      {
+        {
         path: "/",
         element: <HeroSection />,
       },
