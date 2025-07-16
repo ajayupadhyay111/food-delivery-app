@@ -150,6 +150,7 @@ export const updateOrderStatus = async (
     await order.save();
     res.status(200).json({
       success: true,
+      status: order.status,
       message: "Order status updated",
     });
   } catch (error) {

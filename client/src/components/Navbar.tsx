@@ -34,9 +34,9 @@ const Navbar = () => {
     document.documentElement.classList.toggle("dark");
   };
 
-  console.log(cart)
   return (
-    <nav className="bg-white dark:bg-gray-900 shadow px-4 py-2 flex items-center justify-between">
+    <header className=" bg-white dark:bg-gray-900 shadow-md">
+    <nav className=" px-4 py-2 max-w-7xl mx-auto flex items-center justify-between">
       {/* Logo */}
       <Link to="/" className="flex items-center gap-2">
         <div className="logo text-2xl md:text-3xl lg:text-4xl">
@@ -101,7 +101,7 @@ const Navbar = () => {
       </ul>
 
       {/* Right Side: Dark/Light Toggle, Cart, User */}
-      <div className="flex items-center gap-2 sm:gap-4">
+      <div className="flex items-center justify-center gap-2 sm:gap-4">
         {/* Dark/Light Toggle */}
         <Button
           variant="ghost"
@@ -110,9 +110,9 @@ const Navbar = () => {
           aria-label="Toggle dark mode"
         >
           {darkMode ? (
-            <Sun className="w-5 h-5 text-orange-500" />
+            <Sun className="w-9 h-9 text-orange-500" />
           ) : (
-            <Moon className="w-5 h-5 text-gray-700" />
+            <Moon className="w-9 h-9 text-gray-400" />
           )}
         </Button>
         {/* Cart */}
@@ -155,10 +155,10 @@ const Navbar = () => {
           </Button>
         )}
         {/* menu icon */}
-        <div className="sm:hidden">
+        <div className="sm:hidden flex items-center">
           <Sheet>
             <SheetTrigger>
-              <Menu />
+              <Menu size={28} />
             </SheetTrigger>
             <SheetContent side="right" className="">
               <MobileNavbar />
@@ -167,6 +167,7 @@ const Navbar = () => {
         </div>
       </div>
     </nav>
+    </header>
   );
 };
 

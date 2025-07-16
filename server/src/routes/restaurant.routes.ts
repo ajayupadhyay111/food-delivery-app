@@ -11,9 +11,9 @@ export const asyncHandler = (fn:any)=> (req:express.Request,res:express.Response
 router.route("/").post(isAuthenticated,upload.single("imageFile"), asyncHandler(createRestaurant))
 router.route("/").get(isAuthenticated,asyncHandler(getRestaurant))
 router.route("/").put(isAuthenticated,upload.single("imageFile"), asyncHandler(updateRestaurant))
-// router.route("/order").get(isAuthenticated,getRestaurantOrders)
-// router.route("/order/:orderId/status").put(isAuthenticated,updateOrderStatus)
-router.route("/search/:searchText").post(isAuthenticated,searchRestaurant)
-// router.route("/:id").get(isAuthenticated,getSingleRestaurant)
+router.route("/order").get(isAuthenticated,asyncHandler(getRestaurantOrders))
+router.route("/order/:orderId/status").put(isAuthenticated,asyncHandler(updateOrderStatus))
+router.route("/search/:searchText").post(isAuthenticated,asyncHandler(searchRestaurant))
+router.route("/:id").get(isAuthenticated,asyncHandler(getSingleRestaurant))
 
 export default router;

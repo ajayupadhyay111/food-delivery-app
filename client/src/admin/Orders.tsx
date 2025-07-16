@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import useRestaurantStore from "@/zustand/useRestaurantStore";
+import type { Orders } from "@/types/orderTypes";
 
 const initialOrders = [
   {
@@ -29,13 +31,16 @@ const initialOrders = [
 
 function Orders() {
   const [orders, setOrders] = useState(initialOrders);
+  const { getRestaurantOrders, restaurantOrders,updateRestaurantOrder } = useRestaurantStore();
 
-  const handleStatusChange = (id: number, newStatus: string) => {
-    setOrders((prev) =>
-      prev.map((order) =>
-        order.id === id ? { ...order, status: newStatus } : order
-      )
-    );
+  useEffect(() => {
+    getRestaurantOrders();
+  }, [getRestaurantOrders]);
+
+  const handleStatusChange = (id: string, newStatus: string) => {
+    updateRestaurantOrder(id,newStatus)
+    // Update the local state to reflect the change immediately
+
   };
 
   return (
@@ -52,20 +57,24 @@ function Orders() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {orders.map((order) => (
-            <TableRow key={order.id}>
-              <TableCell>{order.name}</TableCell>
-              <TableCell>{order.address}</TableCell>
-              <TableCell>₹{order.total}</TableCell>
+          {restaurantOrders && restaurantOrders.map((order: Orders) => (
+            <TableRow key={order._id}>
+              <TableCell>{order.user?.fullname}</TableCell>
+              <TableCell>{order.user?.address}</TableCell>
+              <TableCell>₹{order.totalAmount}</TableCell>
               <TableCell>
                 <Badge
                   className={
-                    order.status === "Delivered"
-                      ? "bg-green-100 text-green-700"
-                      : order.status === "Pending"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-blue-100 text-blue-700"
-                  }
+                    order.status === "confirmed"
+                    ? "bg-green-100 text-green-700"
+                    : order.status === "pending"
+                    ? "bg-yellow-100 text-yellow-700"
+                    : order.status === "preparing"
+                    ? "bg-orange-100 text-orange-700"
+                      : order.status === "delivered"
+                      ? "bg-blue-100 text-blue-700"
+                      : "bg-gray-100 text-gray-700"
+                    }
                 >
                   {order.status}
                 </Badge>
@@ -73,15 +82,17 @@ function Orders() {
               <TableCell>
                 <Select
                   value={order.status}
-                  onValueChange={(value) => handleStatusChange(order.id, value)}
+                  onValueChange={(value) => handleStatusChange(order._id, value)}
                 >
                   <SelectTrigger className="w-32">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Pending">Pending</SelectItem>
-                    <SelectItem value="On the way">On the way</SelectItem>
-                    <SelectItem value="Delivered">Delivered</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="confirmed">Confirmed</SelectItem>
+                    <SelectItem value="preparing">Preparing</SelectItem>
+                    <SelectItem value="delivered">Delivered</SelectItem>
+                    <SelectItem value="outfordelivery">Out For Delivery</SelectItem>
                   </SelectContent>
                 </Select>
               </TableCell>

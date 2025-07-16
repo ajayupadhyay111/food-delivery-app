@@ -3,18 +3,20 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import axios from "axios";
 import { toast } from "sonner";
 import type { MenuItem, RestaurantState } from "@/types/restaurantType";
+import type { Orders } from "@/types/orderTypes";
 
 const API_END_POINT = "http://localhost:8000/api/v1/restaurant";
 axios.defaults.withCredentials = true;
 
 const useRestaurantStore = create<RestaurantState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       loading: false,
       restaurant: null,
       searchedRestaurant: null,
       appliedFilter: [],
-      singleRestaurant:null,
+      singleRestaurant: null,
+      restaurantOrders: [],
       createRestaurant: async (formData: FormData) => {
         try {
           set({ loading: true });
@@ -131,22 +133,64 @@ const useRestaurantStore = create<RestaurantState>()(
       resetAppliedFilter: () => {
         set({ appliedFilter: [] });
       },
-      getSingleRestaurant:async(restaurantId:string)=>{
+      getSingleRestaurant: async (restaurantId: string) => {
         try {
-          const response = await axios.get(`${API_END_POINT}/${restaurantId}`)
-          if(response.data.success){
-            set({singleRestaurant:response.data.restaurant})
+          const response = await axios.get(`${API_END_POINT}/${restaurantId}`);
+          if (response.data.success) {
+            set({ singleRestaurant: response.data.restaurant });
           }
         } catch (error) {
-          console.log(error)
+          console.log(error);
         }
-      }      
+      },
+      getRestaurantOrders: async () => {
+        try {
+          set({ loading: true });
+          const response = await axios.get(`${API_END_POINT}/order`);
+          if (response.data.success) {
+            set({ restaurantOrders: response.data.orders });
+          }
+        } catch (error) {
+          console.log(error);
+        } finally {
+          set({ loading: false });
+        }
+      },
+      updateRestaurantOrder: async (orderId: string, status: string) => {
+        try {
+          const response = await axios.put(
+            `${API_END_POINT}/order/${orderId}/status`,
+            { status },
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          if (response.data.success) {
+            const updateOrder = get().restaurantOrders?.map((order: Orders) => {
+              return order._id === orderId
+                ? { ...order, status: response.data.status }
+                : order;
+            });
+            set({ restaurantOrders: updateOrder });
+            toast.success(response.data.message);
+          }
+        } catch (error) {
+          if (axios.isAxiosError(error)) {
+            toast.error(error.response?.data?.message);
+          } else if (error instanceof Error) {
+            toast.error(error.message);
+          } else {
+            toast.error("Something went wrong");
+          }
+        }
+      },
     }),
     {
-      name: "restaurant-name",
+      name: "restaurant-storage",
       storage: createJSONStorage(() => localStorage),
     }
   )
 );
-
 export default useRestaurantStore;

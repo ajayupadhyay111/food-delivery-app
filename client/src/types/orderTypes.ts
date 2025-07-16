@@ -1,3 +1,6 @@
+import { updateOrderStatus } from './../../../server/src/controller/restaurant.controller';
+import type { User } from "@/zustand/useUserStore";
+
 export type CheckoutSessionRequest = {
   cartItems: {
     menuId: string;
@@ -15,11 +18,12 @@ export type CheckoutSessionRequest = {
     country: string;
   };
   restaurantId: string;
+  user?: User;
 };
 
 export interface Orders extends CheckoutSessionRequest {
   _id: string;
-  state: string;
+  status: string;
   totalAmount: number;
 }
 
@@ -29,5 +33,5 @@ export type OrderState = {
   createCheckoutSession: (
     checkoutSessionRequest: CheckoutSessionRequest
   ) => Promise<void>;
-  getOrderDetails: () => Promise<void>;
+  getOrderDetails: () => Promise<void>; 
 };

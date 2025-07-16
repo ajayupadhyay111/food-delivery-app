@@ -21,6 +21,8 @@ import Orders from "./admin/Orders";
 import { useUserStore } from "./zustand/useUserStore";
 import { useEffect } from "react";
 import InitialLoadingPage from "./components/InitialLoadingPage";
+import OrderStatus from "./components/Success";
+import UserOrders from "./components/UserOrders";
 
 const ProtectedRoutes = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isVerified } = useUserStore();
@@ -81,6 +83,15 @@ const router = createBrowserRouter([
       {
         path: "/cart",
         element: <Cart />,
+      },
+      
+      {
+        path: "/orders",
+        element: <UserOrders/>,
+      },
+      {
+        path: "/order/status",
+        element: <OrderStatus/>,
       },
       {
         path: "/admin/restaurant",

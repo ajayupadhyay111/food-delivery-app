@@ -8,7 +8,7 @@ function HeroSection() {
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState<string>("");
   return (
-    <section className="w-full h-[90vh] bg-gradient-to-br from-orange-100 to-yellow-100 dark:from-gray-900 dark:to-gray-800 py-12 transition-colors">
+    <section className="w-full h-[90vh] md:flex justify-center items-center bg-gradient-to-br from-orange-100 to-yellow-100 dark:from-gray-900 dark:to-gray-800 py-12 transition-colors">
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between px-4 gap-10">
         {/* Left: Text and Search */}
         <div className="flex-1 flex flex-col items-start gap-6">

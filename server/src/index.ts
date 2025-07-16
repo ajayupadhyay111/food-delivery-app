@@ -34,7 +34,7 @@ app.use(
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/restaurant", restaurantRoutes);
 app.use("/api/v1/menu", menuRoutes);
-// app.use("/api/v1/order", orderRoutes);
+app.use("/api/v1/order", orderRoutes);
 
 // error handler middleware
 app.use(errorHandler);

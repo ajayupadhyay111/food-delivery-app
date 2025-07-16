@@ -17,7 +17,6 @@ const Login = () => {
   const { login, loading } = useUserStore();
   const ChangeEventHandler = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    console.log(name, value);
     setInput({ ...input, [name]: value });
   };
 
