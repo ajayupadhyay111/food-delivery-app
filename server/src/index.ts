@@ -1,5 +1,5 @@
 import express from "express";
-import path from 'path';
+import path from "path";
 import dotenv from "dotenv";
 import connectDB from "./db/db";
 import errorHandler from "./middleware/errorHandler";
@@ -16,6 +16,11 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// demo route
+app.get("/", (req, res) => {
+  res.send("Welcome to the Food App API");
+});
 
 //middlewares
 app.use(bodyParser.json({ limit: "10mb" }));
