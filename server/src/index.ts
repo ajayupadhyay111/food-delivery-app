@@ -1,4 +1,5 @@
 import express from "express";
+import path from 'path';
 import dotenv from "dotenv";
 import connectDB from "./db/db";
 import errorHandler from "./middleware/errorHandler";
@@ -9,15 +10,12 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import orderRoutes from "./routes/order.routes";
+
 // Importing dotenv to manage environment variables
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-app.get("/", (req, res) => {
-  res.send("Hello from TypeScript backend!");
-});
 
 //middlewares
 app.use(bodyParser.json({ limit: "10mb" }));
