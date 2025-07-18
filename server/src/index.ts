@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import connectDB from "./db/db";
 import errorHandler from "./middleware/errorHandler";
@@ -16,8 +16,8 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// demo route
-app.get("/", (req, res) => {
+// demo route in ts
+app.get("/", (req:Request, res:Response) => {
   res.send("Welcome to the Food App API");
 });
 
