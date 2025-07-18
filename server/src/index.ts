@@ -1,5 +1,4 @@
 import express from "express";
-import path from "path";
 import dotenv from "dotenv";
 import connectDB from "./db/db";
 import errorHandler from "./middleware/errorHandler";
@@ -27,6 +26,7 @@ app.use(bodyParser.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(express.json());
 app.use(cookieParser());
+
 app.use(
   cors({
     origin: process.env.FRONTEND_URL,
