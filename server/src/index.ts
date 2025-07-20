@@ -1,6 +1,5 @@
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
-import connectDB from "./db/db";
 import errorHandler from "./middleware/errorHandler";
 import userRoutes from "./routes/user.routes";
 import restaurantRoutes from "./routes/restaurant.routes";
@@ -9,6 +8,7 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import orderRoutes from "./routes/order.routes";
+import mongoose from "mongoose";
 
 // Importing dotenv to manage environment variables
 dotenv.config();
@@ -41,6 +41,17 @@ app.use("/api/v1/order", orderRoutes);
 
 // error handler middleware
 app.use(errorHandler);
+
+// database connection
+const connectDB = async()=>{
+    try {
+        await mongoose.connect(process.env.MONGO_URI as string)
+        console.log('MongoDB connected');
+    } catch (error) {
+        console.error('Error connecting to MongoDB:', error);
+        process.exit(1);
+    }
+}
 
 app.listen(PORT, () => {
   connectDB();
